@@ -1,8 +1,11 @@
 package com.ytdl.youtubedownloader.service.serviceImpl;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Map;
+import java.util.logging.Logger;
 
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -14,10 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import com.ytdl.youtubedownloader.controller.YoutubeDownloaderController;
 import com.ytdl.youtubedownloader.service.YoutubeDownloaderService;
-
-import java.io.File;
-import java.util.Map;
-import java.util.logging.Logger;
 
 @Service
 public class YoutubeDownloaderServiceImpl implements YoutubeDownloaderService {
@@ -54,9 +53,37 @@ public class YoutubeDownloaderServiceImpl implements YoutubeDownloaderService {
         // Create a unique file path
         String uniqueFilePath = currentDir + File.separator + videoTitle + "_" + videoId + "_" + videoQuality + "p.mp4";
 
-        // Check if the file already exists
-        File videoFile = new File(uniqueFilePath);
-        if (videoFile.exists()) {
+        String command = "yt-dlp -f \"bestvideo[height<=" + videoQuality + "]+bestaudio/best[height<=" + videoQuality + "]\" -o \"" + uniqueFilePath + "\" " + videoUrl;
+        System.out.println(command);
+        try {
+            Process process = createProcess(command);
+
+            // Capture standard output and errors
+            try (BufferedReader outputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                 BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                String line;
+                while ((line = outputReader.readLine()) != null) {
+                    LOGGER.info("yt-dlp output: " + line);
+                }
+                while ((line = errorReader.readLine()) != null) {
+                    LOGGER.warning("yt-dlp warning/error: " + line);
+                }
+            }
+            System.out.println("72");
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                LOGGER.severe("yt-dlp command failed with exit code: " + exitCode);
+                return ResponseEntity.status(500).build();
+            }
+            System.out.println("78");
+            // Check if the file was created
+            File videoFile = new File(uniqueFilePath);
+            if (!videoFile.exists()) {
+                LOGGER.severe("Video file was not created. File path: " + uniqueFilePath);
+                return ResponseEntity.status(500).build();
+            }
+            System.out.println("85");
+            // Stream the video file to the user's browser
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + videoFile.getName());
             Resource resource = new FileSystemResource(videoFile);
@@ -64,65 +91,21 @@ public class YoutubeDownloaderServiceImpl implements YoutubeDownloaderService {
                     .headers(headers)
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(resource);
-        }
-
-        String command = "yt-dlp -f 'bestvideo[height<=" + videoQuality + "]+bestaudio/best[height<=" + videoQuality + "]' -o \"" + uniqueFilePath + "\" " + videoUrl;
-        System.out.println(command);
-        try {
-            Process process = createProcess(command);
-
-            // Capture standard output
-            try (BufferedReader outputReader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                String line;
-                while ((line = outputReader.readLine()) != null) {
-                    LOGGER.info("yt-dlp output: " + line);
-                }
-            }
-
-            // Capture standard error
-            boolean hasWarnings = false;
-            try (BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-                String line;
-                while ((line = errorReader.readLine()) != null) {
-                    LOGGER.warning("yt-dlp warning/error: " + line);
-                    hasWarnings = true;
-                }
-            }
-
-            int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                LOGGER.severe("yt-dlp command failed with exit code: " + exitCode);
-                return ResponseEntity.status(500).build();
-            }
-
-            if (!videoFile.exists()) {
-                LOGGER.severe("Video file was not created. File path: " + uniqueFilePath);
-                return ResponseEntity.status(500).build();
-            }
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + videoFile.getName());
-
-            Resource resource = new FileSystemResource(videoFile);
-            ResponseEntity<Resource> responseEntity = ResponseEntity.ok()
-                    .headers(headers)
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(resource);
-
-            if (hasWarnings) {
-                LOGGER.warning("The download completed with warnings. Please check the logs for details.");
-                return ResponseEntity.status(206).body(resource); // 206 Partial Content to indicate warnings
-            }
-
-            return responseEntity;
         } catch (IOException | InterruptedException e) {
             LOGGER.severe("Exception occurred: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(500).build();
+        } catch (Exception e) {
+            LOGGER.warning("Unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(500).build();
+        } finally {
+            // Clean up the downloaded file
+            new File(uniqueFilePath).delete();
         }
     }
-
-    private Process createProcess(String command) throws IOException {
+    
+    @Override
+    public Process createProcess(String command) throws IOException {
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("win")) {
             return new ProcessBuilder("cmd.exe", "/c", command).start();

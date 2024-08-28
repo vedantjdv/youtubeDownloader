@@ -6,180 +6,246 @@
     <title>YouTube Video Downloader</title>
     <style>
       body {
-        font-family: Arial, sans-serif;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         text-align: center;
-        background-color: #f4f4f4;
-        padding: 20px;
+        background-color: #f0f2f5;
+        padding: 20px 20px 0;
+        color: #333;
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        flex: 1;
       }
       h1 {
-        color: #333;
+        color: #000033; /* Darker navy blue */
+        margin-bottom: 30px;
       }
       form {
-        margin: 0 auto;
-        width: 80%;
-        max-width: 600px;
-        background-color: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        text-align: left;
       }
       label {
         display: block;
-        margin: 10px 0 5px;
+        margin: 15px 0 5px;
         color: #555;
+        font-weight: bold;
       }
       input[type="text"],
       select {
         width: 100%;
-        padding: 10px;
+        padding: 12px;
         margin: 5px 0 20px;
         border: 1px solid #ddd;
         border-radius: 5px;
+        font-size: 16px;
+        box-sizing: border-box;
       }
       button {
-        background-color: #4caf50;
+        background-color: #000033; /* Darker navy blue */
         color: white;
         border: none;
-        padding: 10px 20px;
+        padding: 12px 24px;
         border-radius: 5px;
         cursor: pointer;
         font-size: 16px;
+        transition: background-color 0.3s;
+        display: block;
+        margin: 0 auto; /* Center the button */
       }
       button:hover {
-        background-color: #45a049;
+        background-color: #000022; /* Even darker navy blue for hover */
       }
-      #loadingContainer {
-        display: none;
+      .error {
+        color: #d93025;
+        font-weight: bold;
         margin-top: 20px;
       }
-      #progressBar {
+      .progress-container {
+        margin-top: 20px;
+        display: none;
+      }
+      .progress-bar {
         width: 100%;
-        background-color: #f3f3f3;
-        border: 1px solid #ccc;
+        background-color: #e0e0e0;
         border-radius: 5px;
         overflow: hidden;
       }
-      #progress {
-        height: 30px;
+      .progress {
         width: 0;
-        background-color: #4caf50;
-        text-align: center;
-        color: white;
-        line-height: 30px;
-        border-radius: 5px;
+        height: 20px;
+        background-color: #000033; /* Darker navy blue */
+        transition: width 0.5s;
       }
-      .error {
-        color: red;
+      .progress-text {
+        margin-top: 10px;
         font-weight: bold;
-        margin-top: 20px;
+      }
+      .ad-container {
+        margin: 20px auto;
+        padding: 10px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        text-align: center;
+      }
+      footer {
+        margin-top: 50px;
+        padding: 20px;
+        background-color: #f5f5f7;
+        color: #86868b;
+        font-size: 12px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      footer a {
+        color: #515154;
+        text-decoration: none;
+      }
+      footer a:hover {
+        text-decoration: underline;
+      }
+      @media (max-width: 768px) {
+        .container {
+          padding: 20px;
+        }
+        h1 {
+          font-size: 24px;
+        }
+        input[type="text"],
+        select,
+        button {
+          font-size: 14px;
+        }
       }
     </style>
   </head>
   <body>
-    <h1>YouTube Video Downloader</h1>
-    <form id="downloadForm">
-      <label for="url">YouTube Video URL:</label>
-      <input type="text" id="url" name="url" required />
-      <label for="video_quality">Select video quality:</label>
-      <select id="video_quality" name="video_quality">
-        <option value="1080p">1080p</option>
-        <option value="720p">720p</option>
-        <option value="480p">480p</option>
-        <option value="360p">360p</option>
-      </select>
-      <button type="submit">Download Video</button>
-    </form>
+    <div class="ad-container">
+      <!-- Ad placeholder -->
+      <p>Ad space (top)</p>
+    </div>
 
-    <div id="loadingContainer">
-      <p>Downloading video...</p>
-      <div id="progressBar">
-        <div id="progress">0%</div>
+    <div class="container">
+      <h1>YouTube Video Downloader</h1>
+      <form id="downloadForm">
+        <label for="url">YouTube Video URL:</label>
+        <input type="text" id="url" name="url" required placeholder="Enter YouTube URL" />
+        <label for="video_quality">Select video quality:</label>
+        <select id="video_quality" name="video_quality">
+          <option value="1080">1080p</option>
+          <option value="720">720p</option>
+          <option value="480">480p</option>
+          <option value="360">360p</option>
+        </select>
+        <button type="submit">Download Video</button>
+      </form>
+
+      <div id="errorContainer" class="error"></div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressBar" class="progress"></div>
+        </div>
+        <div id="progressText" class="progress-text">0%</div>
       </div>
     </div>
 
-    <div id="errorContainer" class="error"></div>
+    <div class="ad-container">
+      <!-- Ad placeholder -->
+      <p>Ad space (bottom)</p>
+    </div>
+
+    <footer>
+      <p>
+        <a href="mailto:vedantjadhav000@gmail.com">vedantjadhav000@gmail.com</a> |
+        <a href="https://twitter.com/vedantjdv" target="_blank">@vedantjdv</a>
+      </p>
+      <p>Made with ❤️ in India</p>
+    </footer>
 
     <script>
-      document
-        .getElementById("downloadForm")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
+      document.getElementById("downloadForm").addEventListener("submit", function (e) {
+        e.preventDefault();
 
-          const url = document.getElementById("url").value;
-          const videoQuality = document.getElementById("video_quality").value;
+        const url = document.getElementById("url").value;
+        const videoQuality = document.getElementById("video_quality").value;
+        const progressContainer = document.getElementById("progressContainer");
+        const progressBar = document.getElementById("progressBar");
+        const progressText = document.getElementById("progressText");
 
-          // Clear any previous error messages
-          document.getElementById("errorContainer").textContent = "";
+        console.log("Form submitted with URL:", url, "and Quality:", videoQuality);
 
-          // Show loading animation
-          document.getElementById("loadingContainer").style.display = "block";
+        // Clear any previous error messages and show progress bar
+        document.getElementById("errorContainer").textContent = "";
+        progressContainer.style.display = "block";
+        progressBar.style.width = "0%";
+        progressText.textContent = "0%";
 
-          fetch("http://localhost:3000/downloadVideo", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ url, videoQuality }),
+        // Simulate progress (replace this with actual progress updates from the server)
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+          progress += 10;
+          if (progress <= 90) {
+            progressBar.style.width = progress + "%";
+            progressText.textContent = progress + "%";
+          }
+        }, 500);
+
+        fetch("http://localhost:3000/ytdl/downloadVideo", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url, videoQuality }),
+        })
+          .then((response) => {
+            console.log("Fetch response received:", response);
+
+            if (!response.ok) {
+              throw new Error("Network response was not ok, status: " + response.status);
+            }
+            console.log("Response is ok, converting to blob...");
+            return response.blob();  // Convert response to blob
           })
-            .then((response) => {
-              if (!response.ok) {
-                throw new Error("Network response was not ok");
-              }
-              // Track progress of the response
-              const reader = response.body.getReader();
-              const contentLength = +response.headers.get("Content-Length");
-              let receivedLength = 0;
-              let chunks = [];
+          .then((blob) => {
+            console.log("Blob received:", blob);
 
-              const progressElement = document.getElementById("progress");
+            // Set progress to 100% when download is complete
+            clearInterval(progressInterval);
+            progressBar.style.width = "100%";
+            progressText.textContent = "100%";
 
-              return new Promise((resolve, reject) => {
-                reader
-                  .read()
-                  .then(function processText({ done, value }) {
-                    if (done) {
-                      resolve(new Blob(chunks));
-                      return;
-                    }
+            const a = document.createElement("a");
+            const url = window.URL.createObjectURL(blob);
+            a.href = url;
+            a.download = "video.mp4"; // The file will be downloaded as video.mp4
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
 
-                    chunks.push(value);
-                    receivedLength += value.length;
+            console.log("Download link created and triggered.");
 
-                    const percentComplete =
-                      (receivedLength / contentLength) * 100;
-                    progressElement.style.width = `${percentComplete}%`;
-                    progressElement.textContent = `${Math.round(
-                      percentComplete
-                    )}%`;
-
-                    return reader.read().then(processText);
-                  })
-                  .catch(reject);
-              });
-            })
-            .then((blob) => {
-              const a = document.createElement("a");
-              const url = window.URL.createObjectURL(blob);
-              a.href = url;
-              a.download = "video.mp4"; // The file will be downloaded as video.mp4
-              document.body.appendChild(a);
-              a.click();
-              window.URL.revokeObjectURL(url);
-
-              // Hide loading animation
-              document.getElementById("loadingContainer").style.display =
-                "none";
-            })
-            .catch((error) => {
-              console.error("Error:", error);
-              document.getElementById("errorContainer").textContent =
-                "Error: " + error.message;
-
-              // Hide loading animation
-              document.getElementById("loadingContainer").style.display =
-                "none";
-            });
-        });
+            // Hide progress bar after a short delay
+            setTimeout(() => {
+              progressContainer.style.display = "none";
+            }, 2000);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            document.getElementById("errorContainer").textContent =
+              "Error: " + error.message;
+            progressContainer.style.display = "none";
+            clearInterval(progressInterval);
+          });
+      });
     </script>
   </body>
 </html>
