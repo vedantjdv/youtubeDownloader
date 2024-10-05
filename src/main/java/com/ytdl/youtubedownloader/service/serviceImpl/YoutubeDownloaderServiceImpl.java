@@ -69,20 +69,17 @@ public class YoutubeDownloaderServiceImpl implements YoutubeDownloaderService {
                     LOGGER.warning("yt-dlp warning/error: " + line);
                 }
             }
-            System.out.println("72");
             int exitCode = process.waitFor();
             if (exitCode != 0) {
                 LOGGER.severe("yt-dlp command failed with exit code: " + exitCode);
                 return ResponseEntity.status(500).build();
             }
-            System.out.println("78");
             // Check if the file was created
             File videoFile = new File(uniqueFilePath);
             if (!videoFile.exists()) {
                 LOGGER.severe("Video file was not created. File path: " + uniqueFilePath);
                 return ResponseEntity.status(500).build();
             }
-            System.out.println("85");
             // Stream the video file to the user's browser
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + videoFile.getName());
